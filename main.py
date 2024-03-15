@@ -1,12 +1,12 @@
-puzzle_string = """----2--13
---4---2-5
-95--8--4-
--6954----
-------1-6
---5816--4
-----5---8
-----92-3-
-6--------"""
+puzzle_string = """3-5---1--
+--6-7----
+8--9-5-2-
+------9-8
+--1--46--
+-4-------
+-3---7--5
+7--28---6
+---3----2"""
 
 
 class SudokuSolver:
@@ -23,12 +23,14 @@ class SudokuSolver:
                             "value": number,
                             "notes": [],
                             "block": ((i // 3) * 3) + ((j // 3) + 1),
+                            "answered": False,
                         }
                         if number.isnumeric()
                         else {
                             "value": None,
                             "notes": [],
                             "block": ((i // 3) * 3) + ((j // 3) + 1),
+                            "answered": False,
                         }
                     )
                     for j, number in enumerate(row)
@@ -39,16 +41,24 @@ class SudokuSolver:
         for column in self.puzzle:
             print()
             for c in column:
-                if c["value"] != None:
-                    if c["block"] % 2 == 0:
-                        print(f'\033[92m{c["value"]}\033[00m', end=" ")
+                color_prefix = "\033[92m" if c["block"] % 2 == 0 else ""
+                color_suffix = "\033[00m" if color_prefix else ""
+
+                def wrap_with_background(text):
+                    if c["answered"]:
+                        return f"\033[40m{text}\033[00m"
                     else:
-                        print(c["value"], end=" ")
-                else:
-                    if c["block"] % 2 == 0:
-                        print("\033[92m-\033[00m", end=" ")
-                    else:
-                        print("-", end=" ")
+                        return text
+
+                def wrap_with_color(text):
+                    return wrap_with_background(
+                        f"{color_prefix}{str(text)}{color_suffix}"
+                    )
+
+                print(
+                    wrap_with_color(c["value"] if c["value"] else "-"),
+                    end=" ",
+                )
         print()
 
     def write_puzzle(self):
@@ -121,8 +131,29 @@ class SudokuSolver:
                             cell_found = True
         return cell_found
 
+    def fetch_single_block(self):
+        for i in range(9):
+            for j in range(9):
+                current_key = self.puzzle[i][j]["value"]
+                if current_key is None:
+                    current_block = self.puzzle[i][j]["block"]
+                    for note in self.puzzle[i][j]["notes"]:
+                        flag = False
+                        for x in range(9):
+                            for y in range(9):
+                                if i == x and j == y:
+                                    pass
+                                else:
+                                    comp_block = self.puzzle[x][y]["block"]
+                                    if comp_block == current_block:
+                                        if note in self.puzzle[x][y]["notes"]:
+                                            flag = True
+                        if flag == False:
+                            self.input_cell(i, j, note)
+
     def input_cell(self, column, row, value):
         self.puzzle[column][row]["value"] = value
+        self.puzzle[column][row]["answered"] = True
         self.fetch_all_notes()
 
 
@@ -139,6 +170,11 @@ while flag:
     if sudoku_solver.fetch_single_row_column():
         flag = True
         sudoku_solver.print_puzzle()
+
+    if sudoku_solver.fetch_single_block():
+        flag = True
+        sudoku_solver.print_puzzle()
+
 
 sudoku_solver.print_puzzle()
 sudoku_solver.write_puzzle()
