@@ -1,12 +1,12 @@
-puzzle_string = """----617--
--51--78--
-----2---4
--1------8
-82--19---
---98---72
---59-263-
----73---5
--63--428-"""
+puzzle_string = """----2--13
+--4---2-5
+95--8--4-
+-6954----
+------1-6
+--5816--4
+----5---8
+----92-3-
+6--------"""
 
 
 class SudokuSolver:
@@ -85,17 +85,41 @@ class SudokuSolver:
             for j in range(9):
                 if self.puzzle[i][j]["value"] is None:
                     self.puzzle[i][j]["notes"] = self.fetch_cell_notes(i, j)
+                else:
+                    self.puzzle[i][j]["notes"] = []
 
-    def fetch_singles(self):
-        single_found = False
+    def fetch_single_note(self):
+        cell_found = False
         for i in range(9):
             for j in range(9):
                 current_key = self.puzzle[i][j]["value"]
                 if current_key is None:
                     if len(self.puzzle[i][j]["notes"]) == 1:
                         self.input_cell(i, j, self.puzzle[i][j]["notes"][0])
-                        single_found = True
-        return single_found
+                        cell_found = True
+        return cell_found
+
+    def fetch_single_row_column(self):
+        cell_found = False
+        for i in range(9):
+            for j in range(9):
+                current_key = self.puzzle[i][j]["value"]
+                if current_key is None:
+                    for note in self.puzzle[i][j]["notes"]:
+                        flag_row = False
+                        flag_column = False
+                        for x in range(9):
+                            if x != j:
+                                if note in self.puzzle[i][x]["notes"]:
+                                    flag_row = True
+                        for x in range(9):
+                            if x != i:
+                                if note in self.puzzle[x][j]["notes"]:
+                                    flag_column = True
+                        if flag_row == False or flag_column == False:
+                            self.input_cell(i, j, note)
+                            cell_found = True
+        return cell_found
 
     def input_cell(self, column, row, value):
         self.puzzle[column][row]["value"] = value
@@ -105,6 +129,16 @@ class SudokuSolver:
 sudoku_solver = SudokuSolver(puzzle_string)
 sudoku_solver.print_puzzle()
 sudoku_solver.fetch_all_notes()
-while sudoku_solver.fetch_singles():
-    sudoku_solver.print_puzzle()
+flag = True
+while flag:
+    flag = False
+    if sudoku_solver.fetch_single_note():
+        flag = True
+        sudoku_solver.print_puzzle()
+
+    if sudoku_solver.fetch_single_row_column():
+        flag = True
+        sudoku_solver.print_puzzle()
+
+sudoku_solver.print_puzzle()
 sudoku_solver.write_puzzle()
