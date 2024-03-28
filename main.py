@@ -1,12 +1,12 @@
-puzzle_string = """3-5---1--
---6-7----
-8--9-5-2-
-------9-8
---1--46--
--4-------
--3---7--5
-7--28---6
----3----2"""
+puzzle_string = """5-----9--
+---521---
+---6-72--
+-8-----39
+--7-6----
+42-1--8-5
+8----4--1
+--9-----8
+-3-------"""
 
 
 class SudokuSolver:
@@ -178,3 +178,14 @@ while flag:
 
 sudoku_solver.print_puzzle()
 sudoku_solver.write_puzzle()
+
+
+"""
+TODO:
+
+all element in single row/column in a cell
+
+double combinations
+
+XY Wing elimination
+"""
